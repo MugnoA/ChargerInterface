@@ -83,6 +83,24 @@
         </div>
       </div>
 
+      <!-- CENTER: Efficiency -->
+      <div class="efficiency-strip">
+        <div class="eff-label">Eficiencia</div>
+        <div class="eff-ring-wrap">
+          <svg class="eff-ring" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="6"/>
+            <circle cx="50" cy="50" r="42" fill="none" stroke-width="6" stroke-linecap="round"
+              id="effArc"
+              stroke="var(--accent-teal)"
+              stroke-dasharray="263.9 263.9"
+              stroke-dashoffset="263.9"
+              transform="rotate(-90 50 50)"/>
+          </svg>
+          <div class="eff-value"><span id="mEff">0</span><span class="eff-pct">%</span></div>
+        </div>
+        <div class="eff-arrow">&#10132;</div>
+      </div>
+
       <!-- RIGHT: Output -->
       <div class="io-column">
         <div class="io-header">
