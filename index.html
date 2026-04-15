@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DC/DC Bidireccional — Monitor &amp; Tune</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ── Top bar ─────────────────────────── -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title"><span>&#9889;</span> DC/DC Bidireccional &mdash; F28M35x</div>
+      <div class="status-pill stopped" id="statusPill">
+        <span class="status-dot"></span>
+        <span id="statusText">STOPPED</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="modeI">CTRL I</button>
+        <button class="mode-btn" id="modeV">CTRL V</button>
+      </div>
+      <button class="btn btn-start" id="powerBtn">Encender</button>
+      <span class="conn-badge offline" id="connBadge">OFFLINE</span>
+      <button class="btn btn-tune" id="tuneBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
+          <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
+          <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line>
+          <line x1="17" y1="16" x2="23" y2="16"></line>
+        </svg>
+        Tune
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Main content ────────────────────── -->
+  <main class="main" id="mainContent">
+
+    <!-- Setpoint cards -->
+    <div class="setpoint-display">
+      <div class="setpoint-card current">
+        <div class="setpoint-info">
+          <div class="setpoint-label">Setpoint corriente</div>
+          <div class="setpoint-val"><span id="spCurrVal">4.0</span><span class="setpoint-unit">A</span></div>
+        </div>
+        <span class="setpoint-tag active-tag" id="spCurrTag">Activo</span>
+      </div>
+      <div class="setpoint-card voltage">
+        <div class="setpoint-info">
+          <div class="setpoint-label">Setpoint voltaje</div>
+          <div class="setpoint-val"><span id="spVoltVal">250</span><span class="setpoint-unit">V</span></div>
+        </div>
+        <span class="setpoint-tag" id="spVoltTag">Inactivo</span>
+      </div>
+    </div>
+
+    <!-- ── Input / Output columns ────────── -->
+    <div class="io-grid">
+
+      <!-- LEFT: Input -->
+      <div class="io-column">
+        <div class="io-header">
+          <span class="io-label">Entrada</span>
+          <span class="io-power">Potencia: <strong id="mPowerIn">0.0</strong> <span class="io-power-unit">W</span></span>
+        </div>
+        <div class="chart-panel">
+          <div class="chart-header">
+            <div class="chart-title"><span class="chart-title-dot" style="background:#2DD4A8"></span>Voltaje</div>
+            <div class="chart-legend"><span id="mVoltIn">0.0</span> V</div>
+          </div>
+          <canvas class="chart-canvas" id="cvVoltIn"></canvas>
+        </div>
+        <div class="chart-panel">
+          <div class="chart-header">
+            <div class="chart-title"><span class="chart-title-dot" style="background:#F5A623"></span>Corriente</div>
+            <div class="chart-legend"><span id="mCurrIn">0.00</span> A</div>
+          </div>
+          <canvas class="chart-canvas" id="cvCurrIn"></canvas>
+        </div>
+      </div>
+
+      <!-- RIGHT: Output -->
+      <div class="io-column">
+        <div class="io-header">
+          <span class="io-label">Salida</span>
+          <span class="io-power">Potencia: <strong id="mPowerOut">0.0</strong> <span class="io-power-unit">W</span></span>
+        </div>
+        <div class="chart-panel">
+          <div class="chart-header">
+            <div class="chart-title"><span class="chart-title-dot" style="background:#2DD4A8"></span>Voltaje</div>
+            <div class="chart-legend"><span id="mVoltOut">0.0</span> V</div>
+          </div>
+          <canvas class="chart-canvas" id="cvVoltOut"></canvas>
+        </div>
+        <div class="chart-panel">
+          <div class="chart-header">
+            <div class="chart-title"><span class="chart-title-dot" style="background:#F5A623"></span>Corriente</div>
+            <div class="chart-legend"><span id="mCurrOut">0.00</span> A</div>
+          </div>
+          <canvas class="chart-canvas" id="cvCurrOut"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── ePWM phase shift (bottom) ─────── -->
+    <div class="chart-panel full-width">
+      <div class="chart-header">
+        <div class="chart-title"><span class="chart-title-dot" style="background:#4A9EF5"></span>ePWM — Desfase</div>
+        <div class="pwm-legends">
+          <div class="pwm-legend-item"><span class="pwm-legend-line solid"></span>ePWM1A</div>
+          <div class="pwm-legend-item"><span class="pwm-legend-line dashed"></span>ePWM3A</div>
+          <div class="pwm-legend-sep"></div>
+          <div class="pwm-phase-readout">Phase shift: <strong id="mPhase">0.0</strong>&deg;</div>
+        </div>
+      </div>
+      <canvas class="chart-canvas pwm-canvas" id="cvPWM"></canvas>
+    </div>
+
+  </main>
+
+  <!-- ── Drawer overlay ──────────────────── -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+
+  <!-- ── Drawer panel ────────────────────── -->
+  <aside class="drawer" id="drawer">
+    <div class="drawer-header">
+      <span class="drawer-title">Parámetros</span>
+      <button class="drawer-close" id="drawerClose">&times;</button>
+    </div>
+    <div class="drawer-body">
+
+      <!-- Setpoints -->
+      <div class="drawer-section">
+        <div class="drawer-section-title">Setpoints</div>
+
+        <div class="param-row">
+          <div class="param-label">
+            <span>Corriente (A)</span>
+            <span class="param-val-display" id="dI">4.0</span>
+          </div>
+          <input type="range" class="param-slider" id="slI" min="0" max="10" step="0.1" value="4">
+          <div class="param-range-labels"><span>0</span><span>10</span></div>
+        </div>
+
+        <div class="param-row">
+          <div class="param-label">
+            <span>Voltaje (V)</span>
+            <span class="param-val-display" id="dV">250</span>
+          </div>
+          <input type="range" class="param-slider" id="slV" min="0" max="500" step="1" value="250">
+          <div class="param-range-labels"><span>0</span><span>500</span></div>
+        </div>
+      </div>
+
+      <!-- PI Gains -->
+      <div class="drawer-section">
+        <div class="drawer-section-title">Ganancias PI</div>
+
+        <div class="param-row">
+          <div class="param-label">
+            <span>Kp (proporcional)</span>
+            <span class="param-val-display" id="dKp">0.10</span>
+          </div>
+          <input type="range" class="param-slider" id="slKp" min="0.01" max="5" step="0.01" value="0.1">
+          <div class="param-range-labels"><span>0.01</span><span>5.00</span></div>
+        </div>
+
+        <div class="param-row">
+          <div class="param-label">
+            <span>Ki (integral)</span>
+            <span class="param-val-display" id="dKi">10.0</span>
+          </div>
+          <input type="range" class="param-slider" id="slKi" min="0.1" max="100" step="0.1" value="10">
+          <div class="param-range-labels"><span>0.1</span><span>100</span></div>
+        </div>
+      </div>
+
+      <!-- Direct input -->
+      <div class="drawer-section">
+        <div class="drawer-section-title">Entrada directa</div>
+
+        <div class="param-row">
+          <div class="param-label"><span>Corriente setpoint (A)</span></div>
+          <input type="number" class="param-input" id="inI" value="4" step="0.1" min="0" max="10">
+        </div>
+
+        <div class="param-row">
+          <div class="param-label"><span>Voltaje setpoint (V)</span></div>
+          <input type="number" class="param-input" id="inV" value="250" step="1" min="0" max="500">
+        </div>
+
+        <div class="param-row">
+          <div class="param-label"><span>Kp</span></div>
+          <input type="number" class="param-input" id="inKp" value="0.1" step="0.01" min="0.01" max="5">
+        </div>
+
+        <div class="param-row">
+          <div class="param-label"><span>Ki</span></div>
+          <input type="number" class="param-input" id="inKi" value="10" step="0.1" min="0.1" max="100">
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <script src="app.js"></script>
+</body>
+</html>

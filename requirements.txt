@@ -1,0 +1,4 @@
+websockets>=12.0
+pyserial>=3.5
+# Optional: for full XCP protocol support with A2L parsing
+# pyxcp>=0.25
